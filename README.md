@@ -28,5 +28,5 @@ Performance:
 ![](image/analysis1.png)
 ![](image/analysis2.png)
 Those two images are for the 32768 input case. And the output for all input case are in the following files:
-[[[output/512.txt]]],![](output/2048.txt),"""output/8192.txt""","""output/32768.txt"""
+"output/512.txt","output/2048.txt","output/8192.txt","output/32768.txt"
 The test case for radix sort is in the bottom, which contains power of 2 test(256) and non power of 2 test(130)
