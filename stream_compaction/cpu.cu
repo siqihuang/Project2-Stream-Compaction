@@ -1,5 +1,8 @@
 #include <cstdio>
 #include "cpu.h"
+#include "common.h"
+//#include <cuda.h>
+#include <cuda_runtime.h>
 
 namespace StreamCompaction {
 namespace CPU {
@@ -9,7 +12,20 @@ namespace CPU {
  */
 void scan(int n, int *odata, const int *idata) {
     // TODO
-    printf("TODO\n");
+    if(n==0) return ;
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	cudaEventRecord(start);
+	odata[0]=0;
+	for(int i=1;i<n;++i){
+		odata[i]=odata[i-1]+idata[i-1];
+	}
+	cudaEventRecord(stop);
+	cudaEventSynchronize(stop);
+	float milliseconds = 0;
+	cudaEventElapsedTime(&milliseconds, start, stop);
+	std::cout<<"Time used in scan on CPU "<<milliseconds<<" ms"<<std::endl;
 }
 
 /**
@@ -19,7 +35,11 @@ void scan(int n, int *odata, const int *idata) {
  */
 int compactWithoutScan(int n, int *odata, const int *idata) {
     // TODO
-    return -1;
+    int count=0;
+	for(int i=0;i<n;++i){
+		if(idata[i]!=0) odata[count++]=1;
+	}
+	return count;
 }
 
 /**
@@ -29,7 +49,32 @@ int compactWithoutScan(int n, int *odata, const int *idata) {
  */
 int compactWithScan(int n, int *odata, const int *idata) {
     // TODO
-    return -1;
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	cudaEventRecord(start);
+	int *tmp1=new int[n],*tmp2=new int[n];
+	for(int i=0;i<n;++i){
+		if(idata[i]==0) tmp1[i]=0;
+		else tmp1[i]=1;
+	}
+    scan(n,tmp2,tmp1);
+	for(int i=0;i<n;++i){
+		if(tmp1[i]!=0){
+			odata[tmp2[i]]=1;
+		}
+	}
+	int tmp=tmp2[n-1];
+	delete tmp1;
+	delete tmp2;
+
+	cudaEventRecord(stop);
+	cudaEventSynchronize(stop);
+	float milliseconds = 0;
+	cudaEventElapsedTime(&milliseconds, start, stop);
+	std::cout<<"Time used in compaction on CPU "<<milliseconds<<" ms"<<std::endl;
+	
+	return tmp;
 }
 
 }

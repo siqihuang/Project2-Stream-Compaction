@@ -11,10 +11,12 @@
 #include <stream_compaction/naive.h>
 #include <stream_compaction/efficient.h>
 #include <stream_compaction/thrust.h>
+#include <stream_compaction\radix.h>
 #include "testing_helpers.hpp"
+#include <iostream>
 
 int main(int argc, char* argv[]) {
-    const int SIZE = 1 << 8;
+    const int SIZE = 1 << 15;
     const int NPOT = SIZE - 3;
     int a[SIZE], b[SIZE], c[SIZE];
 
@@ -26,6 +28,7 @@ int main(int argc, char* argv[]) {
     printf("****************\n");
 
     genArray(SIZE - 1, a, 50);  // Leave a 0 at the end to test that edge case
+    a[SIZE - 1] = 0;
     printArray(SIZE, a, true);
 
     zeroArray(SIZE, b);
@@ -83,6 +86,7 @@ int main(int argc, char* argv[]) {
     // Compaction tests
 
     genArray(SIZE - 1, a, 4);  // Leave a 0 at the end to test that edge case
+    a[SIZE - 1] = 0;
     printArray(SIZE, a, true);
 
     int count, expectedCount, expectedNPOT;
@@ -118,4 +122,25 @@ int main(int argc, char* argv[]) {
     count = StreamCompaction::Efficient::compact(NPOT, c, a);
     //printArray(count, c, true);
     printCmpLenResult(count, expectedNPOT, b, c);
+
+	//Radix sort test
+	printDesc("---------------radix sort power of two(256)----------------");
+	int *input1=new int[256],*output=new int[256];
+	for(int i=0;i<256;++i) input1[i]=255-i;
+	//input1[0]=4;input1[1]=7;input1[2]=2;input1[3]=6;input1[4]=3;
+	//input1[5]=5;input1[6]=1;input1[7]=0;
+	StreamCompaction::Radix::radix(256,output,input1);
+	for(int i=0;i<256;++i) std::cout<<output[i]<<",";
+	std::cout<<std::endl;
+	printDesc("---------------radix sort power of two(256)----------------");
+
+	printDesc("------------radix sort none power of two(130)-------------");
+	int *input2=new int[130];
+	for(int i=0;i<130;++i) input1[i]=129-i;
+	//input1[0]=4;input1[1]=7;input1[2]=2;input1[3]=6;input1[4]=3;
+	//input1[5]=5;input1[6]=1;input1[7]=0;
+	StreamCompaction::Radix::radix(130,output,input1);
+	for(int i=0;i<130;++i) std::cout<<output[i]<<",";
+	std::cout<<std::endl;
+	printDesc("------------radix sort none power of two(130)-------------");
 }
